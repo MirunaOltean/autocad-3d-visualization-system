@@ -1,79 +1,148 @@
 # System Architecture Diagram
 
-## Overview
+## 📌 Visual Representation
 
-This document describes the high-level architecture of the AutoCAD 2D/3D visualization system.
-
-It provides a visual and conceptual breakdown of how data flows through the system from input to final rendering.
+![System Architecture](images/architecture.png)
 
 ---
 
-## 🧭 System Architecture (Conceptual)
+## 🧭 Overview
 
-The system is composed of multiple independent layers:
+This document describes the high-level architecture of the AutoCAD-based 2D/3D visualization system.
 
-- Data ingestion layer (AutoCAD input)
-- Backend processing layer (ASP.NET Core MVC)
-- Geometry processing layer (triangulation & reconstruction)
-- Rendering layer (Unity Viewer)
-- Presentation layer (Web Frontend)
+The system transforms raw CAD geometry into multiple visualization modes through a structured multi-layer pipeline.
 
-Each layer is responsible for a single transformation step in the pipeline.
-
----
-
-## 🔄 End-to-End Flow
-
-AutoCAD Data  
-→ Backend (Parsing & Metadata)  
-→ Geometry Processing (Polygon reconstruction)  
-→ Triangulation Engine (Ear Clipping / Delaunay)  
-→ Unity Rendering Pipeline (Mesh generation)  
-→ Visualization Modes (2D / 3D / Silhouette)  
-→ Web Frontend UI
+It is designed with strict separation between:
+- geometry processing
+- semantic interpretation
+- rendering
+- user interaction
 
 ---
 
-## 🏗️ Visualization Modes
+## 🏗️ System Layers
 
-The system supports three distinct outputs:
+### 1. Input Layer (AutoCAD)
 
-### 🟦 2D Architectural View
-- Includes semantic overlays (walls, doors, windows)
-- Used for architectural interpretation
+The system starts from CAD-generated data containing:
+- polylines
+- room boundaries
+- architectural layouts
 
-### 🔺 3D View
-- Pure triangulated geometry
-- No semantic overlays
-- Focus on spatial reconstruction
-
-### 👤 Silhouette View
-- Simplified structural outline
-- Removes internal and semantic details
+This data represents raw geometric information without semantic structure.
 
 ---
 
-## 🧠 Key Design Idea
+### 2. Backend Layer (ASP.NET Core MVC)
 
-A major design principle of the system is **layer separation**:
+Responsible for:
+- parsing CAD-derived data
+- organizing model metadata
+- managing model structure and state
+- preparing data for geometry processing
 
-- Geometry is independent from rendering
-- Semantic interpretation exists only in 2D
-- 3D rendering remains clean and optimized
-
----
-
-## 📌 Diagram 
-
-<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/d0806105-3dc0-42e7-9f2e-d4f70576ff3a" />
+This layer does NOT perform rendering or triangulation.
 
 ---
 
-## 🎯 Role in System
+### 3. Geometry Processing Layer
 
-This architecture ensures:
+Transforms raw CAD geometry into structured mesh data.
 
-- scalability of the pipeline
-- clear separation of concerns
-- flexible rendering modes
-- maintainable system design
+Key operations:
+- polygon reconstruction
+- triangulation (Ear Clipping / Delaunay)
+- cleaning and validation of geometry
+- preparation for 3D transformation
+
+Output: triangulated 2D mesh structures
+
+---
+
+### 4. 3D Rendering Layer (Unity Viewer)
+
+Converts processed geometry into real-time visual output.
+
+Responsibilities:
+- mesh generation (Unity Mesh objects)
+- scene construction
+- WebGL export for browser execution
+- rendering optimization
+
+Output: interactive 3D model
+
+---
+
+### 5. Semantic Architectural Layer (2D ONLY)
+
+This is a specialized interpretation layer applied exclusively in **2D visualization mode**.
+
+It detects and renders architectural elements such as:
+- walls
+- doors
+- windows
+- interior partitions
+- bathroom structures
+
+⚠️ Important constraint:
+This layer is NOT used in:
+- 3D visualization mode
+- silhouette mode
+
+It exists only for enhanced architectural understanding in 2D.
+
+---
+
+### 6. Presentation Layer (Frontend)
+
+Provides user interaction and system control.
+
+Features:
+- model selection
+- visualization mode switching
+- UI interaction handling
+- integration with backend and Unity viewer
+
+Technologies:
+- HTML
+- CSS
+- JavaScript
+
+---
+
+## 🔄 End-to-End Data Flow
+
+AutoCAD Input  
+→ Backend Processing (ASP.NET Core MVC)  
+→ Geometry Reconstruction  
+→ Triangulation Engine  
+→ Unity Rendering Pipeline  
+→ Visualization Mode Selection  
+→ Frontend Interaction Layer  
+
+---
+
+## 🎯 Key Design Principles
+
+### 1. Separation of Concerns
+Each layer has a strictly defined responsibility.
+
+### 2. Context-Dependent Rendering
+Different visualization modes apply different levels of abstraction:
+- 2D → semantic + geometry
+- 3D → geometry only
+- silhouette → simplified structure
+
+### 3. Semantic Isolation
+Architectural interpretation exists only in 2D mode and is intentionally excluded from 3D rendering.
+
+---
+
+## 📌 Summary
+
+The system represents a complete pipeline for transforming CAD data into interactive architectural visualizations, combining:
+
+- computational geometry
+- 3D rendering
+- semantic interpretation (2D only)
+- web-based interaction
